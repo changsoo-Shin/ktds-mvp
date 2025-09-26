@@ -1,0 +1,66 @@
+# 환경 변수 파일
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 가상환경
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+
+# 로그 파일
+*.log
+
+# 임시 파일
+*.tmp
+*.temp
+
+# 테스트 파일
+test_azure.py
+
+# 기존 교육 자료 (보안상 제외)
+day1/
+day2/
+day3/
+day4/
+day5/
+day6/
+day7/
+day8/
+day9/
+BestBikeApp/
