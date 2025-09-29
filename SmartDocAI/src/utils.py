@@ -112,7 +112,7 @@ def validate_file_type(filename: str) -> bool:
     Returns:
         bool: 지원 여부
     """
-    supported_extensions = ['.pdf', '.docx', '.doc', '.txt']
+    supported_extensions = ['.pdf', '.docx', '.doc', '.txt', '.xlsx', '.ppt', '.pptx', '.hwp']
     extension = os.path.splitext(filename)[1].lower()
     return extension in supported_extensions
 

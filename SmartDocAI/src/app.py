@@ -87,9 +87,9 @@ def main():
             # 문서 업로드
             uploaded_files = st.file_uploader(
                 "문서 업로드",
-                type=['pdf', 'docx', 'txt'],
+                type=['pdf', 'docx', 'txt', 'xlsx', 'ppt', 'pptx', 'hwp', 'ipynb'],
                 accept_multiple_files=True,
-                help="PDF, Word, 텍스트 파일을 업로드하세요"
+                help="PDF, Word, Excel, PowerPoint, 한글, 텍스트, Jupyter Notebook 파일을 업로드하세요"
             )
             
             if uploaded_files:
@@ -160,15 +160,27 @@ def initialize_ai_components():
         try:
             with st.spinner("AI 컴포넌트 초기화 중..."):
                 # 검색 엔진 초기화
-                st.session_state.search_engine = SearchEngine()
-                st.session_state.search_engine.add_documents(st.session_state.documents)
+                try:
+                    st.session_state.search_engine = SearchEngine()
+                    st.session_state.search_engine.add_documents(st.session_state.documents)
+                    st.info("✅ 검색 엔진 초기화 완료")
+                except Exception as search_error:
+                    st.warning(f"⚠️ 검색 엔진 초기화 실패: {str(search_error)}")
+                    st.info("검색 기능 없이 AI 어시스턴트만 사용됩니다.")
+                    st.session_state.search_engine = None
                 
                 # AI 어시스턴트 초기화
-                st.session_state.ai_assistant = AIAssistant()
+                try:
+                    st.session_state.ai_assistant = AIAssistant()
+                    st.success("✅ AI 어시스턴트 초기화 완료!")
+                except Exception as ai_error:
+                    st.error(f"❌ AI 어시스턴트 초기화 실패: {str(ai_error)}")
+                    return
                 
                 st.success("✅ AI 컴포넌트 초기화 완료!")
         except Exception as e:
             st.error(f"❌ AI 컴포넌트 초기화 실패: {str(e)}")
+            st.info("환경 변수 설정을 확인해주세요.")
 
 def show_search_interface():
     """검색 인터페이스 표시"""
