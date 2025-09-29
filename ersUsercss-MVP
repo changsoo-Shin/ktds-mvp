@@ -1,0 +1,39 @@
+[33mcommit 5a4c06ac42ae6129e94ef3d21a43c50752a76a0a[m
+Author: changsoo-Shin <changsoo.shin@gmail.com>
+Date:   Mon Sep 29 15:34:41 2025 +0900
+
+    update092903
+
+.env
+.env.sample
+.gitignore
+.venv/Scripts/python.exe
+AzureCLI.msi
+README.md
+SmartDocAI/.deployment
+SmartDocAI/.env
+SmartDocAI/.env.sample
+SmartDocAI/AZURE_DEPLOYMENT.md
+SmartDocAI/azure-config.sample
+SmartDocAI/deploy-azure.ps1
+SmartDocAI/deploy-azure.sh
+SmartDocAI/requirements.txt
+SmartDocAI/setup_env.py
+SmartDocAI/src/AzureCLI.msi
+SmartDocAI/src/__pycache__/ai_assistant.cpython-313.pyc
+SmartDocAI/src/__pycache__/app.cpython-313.pyc
+SmartDocAI/src/__pycache__/document_processor.cpython-313.pyc
+SmartDocAI/src/__pycache__/search_engine.cpython-313.pyc
+SmartDocAI/src/app.py
+SmartDocAI/src/document_processor.py
+SmartDocAI/src/search_engine.py
+SmartDocAI/src/utils.py
+SmartDocAI/startup.py
+SmartDocAI/startup.sh
+SmartDocAI/web.config
+app.py
+config.py
+image_analyzer.py
+requirements.txt
+travel_rag.py
+weather_service.py

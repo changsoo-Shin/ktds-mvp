@@ -5,6 +5,8 @@ Azure AI Search를 활용한 벡터 검색 및 하이브리드 검색 기능 제
 
 import os
 import json
+import re
+import base64
 from typing import List, Dict, Optional
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexClient
@@ -35,34 +37,105 @@ class SearchEngine:
         self.api_key = os.getenv("AZURE_SEARCH_API_KEY")
         self.index_name = os.getenv("AZURE_SEARCH_INDEX_NAME", "smartdoc-index")
         
+        # 환경변수 검증
         if not self.endpoint or not self.api_key:
-            raise ValueError("Azure AI Search 설정이 필요합니다.")
+            missing_vars = []
+            if not self.endpoint:
+                missing_vars.append("AZURE_SEARCH_ENDPOINT")
+            if not self.api_key:
+                missing_vars.append("AZURE_SEARCH_API_KEY")
+            raise ValueError(f"Azure AI Search 설정이 필요합니다. 누락된 환경변수: {', '.join(missing_vars)}")
         
-        # 클라이언트 초기화
-        self.credential = AzureKeyCredential(self.api_key)
-        self.search_client = SearchClient(
-            endpoint=self.endpoint,
-            index_name=self.index_name,
-            credential=self.credential
-        )
+        # 엔드포인트 URL 정규화 (끝에 슬래시 없으면 추가)
+        if not self.endpoint.endswith('/'):
+            self.endpoint += '/'
         
-        self.index_client = SearchIndexClient(
-            endpoint=self.endpoint,
-            credential=self.credential
-        )
+        print(f"Azure AI Search 설정:")
+        print(f"- 엔드포인트: {self.endpoint}")
+        print(f"- 인덱스 이름: {self.index_name}")
         
-        # 토크나이저 초기화
-        self.encoding = tiktoken.get_encoding("cl100k_base")
+        try:
+            # 클라이언트 초기화
+            self.credential = AzureKeyCredential(self.api_key)
+            self.search_client = SearchClient(
+                endpoint=self.endpoint,
+                index_name=self.index_name,
+                credential=self.credential
+            )
+            
+            self.index_client = SearchIndexClient(
+                endpoint=self.endpoint,
+                credential=self.credential
+            )
+            
+            # 토크나이저 초기화
+            self.encoding = tiktoken.get_encoding("cl100k_base")
+            
+            # 인덱스 생성 확인
+            self._ensure_index_exists()
+            
+        except Exception as e:
+            raise Exception(f"Azure AI Search 클라이언트 초기화 실패: {str(e)}")
+    
+    def _sanitize_document_key(self, filename: str) -> str:
+        """
+        파일명을 Azure Search 문서 키 규칙에 맞게 변환
         
-        # 인덱스 생성 확인
-        self._ensure_index_exists()
+        Azure Search 문서 키 규칙:
+        - 문자(letters), 숫자(digits), 언더스코어(_), 대시(-), 등호(=)만 허용
+        - 최대 1024자
+        
+        Args:
+            filename: 원본 파일명
+            
+        Returns:
+            str: 변환된 문서 키
+        """
+        # 파일 확장자 분리
+        name_without_ext = os.path.splitext(filename)[0]
+        ext = os.path.splitext(filename)[1]
+        
+        # 비ASCII 문자(한글 등)가 포함된 경우 Base64 인코딩 사용
+        if not name_without_ext.isascii():
+            # UTF-8로 인코딩한 후 Base64로 변환 (URL-safe)
+            encoded_bytes = name_without_ext.encode('utf-8')
+            sanitized_name = base64.urlsafe_b64encode(encoded_bytes).decode('ascii')
+            # Base64 패딩 문자 '='는 Azure Search에서 허용되므로 그대로 유지
+        else:
+            # ASCII 문자만 있는 경우 기존 방식 사용
+            # 허용되지 않는 문자를 언더스코어로 대체
+            # 허용 문자: 영문자, 숫자, 언더스코어, 대시, 등호
+            sanitized_name = re.sub(r'[^a-zA-Z0-9_\-=]', '_', name_without_ext)
+            
+            # 연속된 언더스코어를 하나로 줄이기
+            sanitized_name = re.sub(r'_{2,}', '_', sanitized_name)
+            
+            # 시작과 끝의 언더스코어 제거
+            sanitized_name = sanitized_name.strip('_')
+        
+        # 확장자가 있으면 추가 (점도 언더스코어로 변환)
+        if ext:
+            sanitized_ext = re.sub(r'[^a-zA-Z0-9_\-=]', '_', ext)
+            sanitized_name = f"{sanitized_name}{sanitized_ext}"
+        
+        # 빈 문자열이면 기본값 사용
+        if not sanitized_name:
+            sanitized_name = "document"
+        
+        # 길이 제한 (1024자)
+        if len(sanitized_name) > 1000:  # 청크 인덱스를 위한 여유 공간
+            sanitized_name = sanitized_name[:1000]
+        
+        return sanitized_name
     
     def _ensure_index_exists(self):
         """인덱스 존재 확인 및 생성"""
         try:
             # 인덱스 존재 확인
             self.index_client.get_index(self.index_name)
-        except Exception:
+            print(f"기존 인덱스 '{self.index_name}' 확인됨")
+        except Exception as e:
+            print(f"인덱스 '{self.index_name}' 찾을 수 없음: {str(e)}")
             # 인덱스가 없으면 생성
             self._create_index()
     
@@ -86,7 +159,10 @@ class SearchEngine:
                 ],
                 vector_search=VectorSearch(
                     algorithms=[HnswAlgorithmConfiguration(name="myHnsw")],
-                    profiles=[VectorSearchProfile(name="myHnswProfile", algorithm="myHnsw")]
+                    profiles=[VectorSearchProfile(
+                        name="myHnswProfile", 
+                        algorithm_configuration_name="myHnsw"
+                    )]
                 ),
                 semantic_search=SemanticSearch(
                     configurations=[
@@ -122,9 +198,12 @@ class SearchEngine:
                 # 문서를 청크로 분할
                 chunks = self._chunk_document(document['content'])
                 
+                # 파일명을 Azure Search 키 규칙에 맞게 변환
+                sanitized_name = self._sanitize_document_key(document['name'])
+                
                 for chunk_idx, chunk in enumerate(chunks):
-                    # 문서 ID 생성
-                    doc_id = f"{document['name']}_{chunk_idx}"
+                    # 문서 ID 생성 (변환된 파일명 사용)
+                    doc_id = f"{sanitized_name}_{chunk_idx}"
                     
                     search_doc = {
                         "id": doc_id,
