@@ -13,20 +13,20 @@ jobs:
     - name: 'Checkout GitHub Action'
       uses: actions/checkout@v4
       
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+    # - name: Setup Python
+    #   uses: actions/setup-python@v4
+    #   with:
+    #     python-version: '3.11'
         
-    - name: 'Resolve Project Dependencies Using Pip'
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r SmartDocAI/requirements.txt
+    # - name: 'Resolve Project Dependencies Using Pip'
+    #   run: |
+    #     python -m pip install --upgrade pip
+    #     pip install -r SmartDocAI/requirements.txt
         
-    - name: 'Test app'
-      run: |
-        cd SmartDocAI
-        python -c "import streamlit; print('Streamlit version:', streamlit.__version__)"
+    # - name: 'Test app'
+    #   run: |
+    #     cd SmartDocAI
+    #     python -c "import streamlit; print('Streamlit version:', streamlit.__version__)"
         
     - name: 'Deploy to Azure Web App'
       uses: azure/webapps-deploy@v2
