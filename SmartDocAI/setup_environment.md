@@ -22,7 +22,7 @@
 AZURE_OPENAI_API_KEY=실제_API_키_여기에_입력
 AZURE_OPENAI_ENDPOINT=https://실제-리소스-이름.openai.azure.com/
 AZURE_OPENAI_API_VERSION=2024-02-15-preview
-AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4o-mini
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4.1-mini
 ```
 
 #### 방법 B: 시스템 환경 변수 설정
@@ -32,7 +32,7 @@ PowerShell에서 다음 명령어 실행:
 $env:AZURE_OPENAI_API_KEY="실제_API_키_여기에_입력"
 $env:AZURE_OPENAI_ENDPOINT="https://실제-리소스-이름.openai.azure.com/"
 $env:AZURE_OPENAI_API_VERSION="2024-02-15-preview"
-$env:AZURE_OPENAI_DEPLOYMENT_NAME="gpt-4o-mini"
+$env:AZURE_OPENAI_DEPLOYMENT_NAME="gpt-4.1-mini"
 ```
 
 ### 3. 필요한 정보 확인

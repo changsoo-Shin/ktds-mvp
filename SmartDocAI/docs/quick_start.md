@@ -32,7 +32,7 @@ pip install -r requirements.txt
 # Azure OpenAI 설정
 AZURE_OPENAI_API_KEY=your_api_key_here
 AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4o-mini
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4.1-mini
 
 # Azure AI Search 설정
 AZURE_SEARCH_ENDPOINT=https://your-search-service.search.windows.net

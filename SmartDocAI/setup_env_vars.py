@@ -48,13 +48,13 @@ def setup_environment():
     print("   AZURE_OPENAI_API_KEY=your_actual_api_key")
     print("   AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/")
     print("   AZURE_OPENAI_API_VERSION=2024-02-15-preview")
-    print("   AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4o-mini")
+    print("   AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4.1-mini")
     
     print("\n   방법 B: PowerShell에서 환경 변수 설정")
     print("   $env:AZURE_OPENAI_API_KEY='your_actual_api_key'")
     print("   $env:AZURE_OPENAI_ENDPOINT='https://your-resource.openai.azure.com/'")
     print("   $env:AZURE_OPENAI_API_VERSION='2024-02-15-preview'")
-    print("   $env:AZURE_OPENAI_DEPLOYMENT_NAME='gpt-4o-mini'")
+    print("   $env:AZURE_OPENAI_DEPLOYMENT_NAME='gpt-4.1-mini'")
     
     print("\n   방법 C: 이 스크립트에서 직접 설정")
     setup_interactive = input("\n지금 설정하시겠습니까? (y/n): ").lower().strip()
@@ -84,9 +84,9 @@ def setup_interactive_mode():
         if not api_version:
             api_version = "2024-02-15-preview"
             
-        deployment_name = input("배포 이름을 입력하세요 (기본값: gpt-4o-mini): ").strip()
+        deployment_name = input("배포 이름을 입력하세요 (기본값: gpt-4.1-mini): ").strip()
         if not deployment_name:
-            deployment_name = "gpt-4o-mini"
+            deployment_name = "gpt-4.1-mini"
         
         # 환경 변수 설정
         os.environ['AZURE_OPENAI_API_KEY'] = api_key
