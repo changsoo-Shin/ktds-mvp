@@ -16,7 +16,7 @@ SmartDoc AI는 업로드한 문서를 AI로 분석하고, RAG(Retrieval-Augmente
 ## ✨ 주요 기능
 - 📄 **다양한 문서 지원**: PDF, Word, PowerPoint, 텍스트, Excel 파일 지원
 - 🔍 **지능형 검색**: Azure AI Search 기반 벡터 검색으로 정확한 문서 검색
-- 💬 **AI 챗봇**: GPT-4o-mini 기반 문서 내용 질문-답변
+- 💬 **AI 챗봇**: GPT-4.1-mini 기반 문서 내용 질문-답변
 - 📊 **자동 요약**: 문서 내용 요약 및 핵심 인사이트 제공
 - 🎯 **문서 분류**: AI 기반 문서 카테고리 자동 분류
 - 🔐 **보안**: Azure Key Vault 통합 및 환경 변수 관리
