@@ -64,7 +64,7 @@ $DEPLOY_URL = az webapp deployment list-publishing-credentials `
 
 Write-Host ""
 Write-Host "✅ 배포 설정 완료!" -ForegroundColor Green
-Write-Host "🌍 웹앱 URL: https://$WEB_APP_NAME.azurewebsites.net" -ForegroundColor Cyan
+Write-Host "🌍 웹앱 URL: https://$WEB_APP_NAME.koreacentral-01.azurewebsites.net" -ForegroundColor Cyan
 Write-Host "📤 Git 배포 URL: $DEPLOY_URL" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "📋 다음 단계:" -ForegroundColor Yellow

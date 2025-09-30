@@ -66,7 +66,7 @@ DEPLOY_URL=$(az webapp deployment list-publishing-credentials \
 
 echo ""
 echo "✅ 배포 설정 완료!"
-echo "🌍 웹앱 URL: https://$WEB_APP_NAME.azurewebsites.net"
+echo "🌍 웹앱 URL: https://$WEB_APP_NAME.koreacentral-01.azurewebsites.net"
 echo "📤 Git 배포 URL: $DEPLOY_URL"
 echo ""
 echo "📋 다음 단계:"

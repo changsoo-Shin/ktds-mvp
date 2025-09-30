@@ -2,10 +2,10 @@
 # Make sure you have Azure CLI installed and are logged in
 
 # Configuration
-$RESOURCE_GROUP = "smartdoc-rg"
+$RESOURCE_GROUP = "css-rg-092601"
 $APP_SERVICE_PLAN = "smartdoc-plan"
-$WEB_APP_NAME = "smartdoc-ai-$(Get-Date -Format 'yyyyMMddHHmmss')"  # Unique name with timestamp
-$LOCATION = "East Asia"  # or your preferred location
+$WEB_APP_NAME = "smartdocai"  # Existing web app name
+$LOCATION = "Korea Central"  # Korea Central region
 $PYTHON_VERSION = "3.11"
 
 Write-Host "🚀 Starting Azure Web App deployment for SmartDocAI..." -ForegroundColor Green
@@ -66,7 +66,7 @@ $DEPLOY_URL = az webapp deployment list-publishing-credentials `
 
 Write-Host ""
 Write-Host "✅ Deployment setup complete!" -ForegroundColor Green
-Write-Host "🌍 Web App URL: https://$WEB_APP_NAME.azurewebsites.net" -ForegroundColor Cyan
+Write-Host "🌍 Web App URL: https://$WEB_APP_NAME.koreacentral-01.azurewebsites.net" -ForegroundColor Cyan
 Write-Host "📤 Git deployment URL: $DEPLOY_URL" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "📋 Next steps:" -ForegroundColor Yellow

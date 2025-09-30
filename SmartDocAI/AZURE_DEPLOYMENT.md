@@ -51,14 +51,14 @@ chmod +x deploy-azure.sh
 
 ### 1. 리소스 그룹 생성
 ```bash
-az group create --name smartdoc-rg --location "East Asia"
+az group create --name css-rg-092601 --location "Korea Central"
 ```
 
 ### 2. App Service Plan 생성
 ```bash
 az appservice plan create \
     --name smartdoc-plan \
-    --resource-group smartdoc-rg \
+    --resource-group css-rg-092601 \
     --sku B1 \
     --is-linux
 ```
@@ -66,9 +66,9 @@ az appservice plan create \
 ### 3. Web App 생성
 ```bash
 az webapp create \
-    --resource-group smartdoc-rg \
+    --resource-group css-rg-092601 \
     --plan smartdoc-plan \
-    --name your-unique-app-name \
+    --name smartdocai \
     --runtime "PYTHON|3.11" \
     --deployment-local-git
 ```
@@ -96,15 +96,15 @@ Azure Portal에서 App Service → Configuration → Application Settings에 다
 ### 5. 시작 명령 설정
 ```bash
 az webapp config set \
-    --resource-group smartdoc-rg \
-    --name your-app-name \
+    --resource-group css-rg-092601 \
+    --name smartdocai \
     --startup-file "startup.py"
 ```
 
 ### 6. 코드 배포
 ```bash
 # Git remote 추가
-git remote add azure https://your-deployment-user@your-app-name.scm.azurewebsites.net/your-app-name.git
+git remote add azure https://smartdocai.scm.azurewebsites.net/smartdocai.git
 
 # 코드 푸시
 git push azure main
@@ -114,11 +114,11 @@ git push azure main
 
 ### 1. 로그 확인
 ```bash
-az webapp log tail --name your-app-name --resource-group smartdoc-rg
+az webapp log tail --name smartdocai --resource-group css-rg-092601
 ```
 
 ### 2. 애플리케이션 상태 확인
-- 브라우저에서 `https://your-app-name.azurewebsites.net` 접속
+- 브라우저에서 `https://smartdocai-hvbwfketcse7g9ff.koreacentral-01.azurewebsites.net` 접속
 - Streamlit 인터페이스가 정상적으로 로드되는지 확인
 
 ### 3. 기능 테스트
@@ -131,7 +131,7 @@ az webapp log tail --name your-app-name --resource-group smartdoc-rg
 ### 일반적인 문제들
 
 1. **애플리케이션이 시작되지 않는 경우**
-   - 로그 확인: `az webapp log tail --name your-app-name --resource-group smartdoc-rg`
+   - 로그 확인: `az webapp log tail --name smartdocai --resource-group css-rg-092601`
    - 환경 변수가 올바르게 설정되었는지 확인
    - requirements.txt의 종속성 문제 확인
 
@@ -151,12 +151,12 @@ az webapp log tail --name your-app-name --resource-group smartdoc-rg
 
 1. **App Service Plan 업그레이드**
    ```bash
-   az appservice plan update --name smartdoc-plan --resource-group smartdoc-rg --sku S1
+   az appservice plan update --name smartdoc-plan --resource-group css-rg-092601 --sku S1
    ```
 
 2. **Always On 설정 활성화**
    ```bash
-   az webapp config set --name your-app-name --resource-group smartdoc-rg --always-on true
+   az webapp config set --name smartdocai --resource-group css-rg-092601 --always-on true
    ```
 
 3. **CDN 설정** (정적 파일 가속화)
@@ -171,7 +171,7 @@ az webapp log tail --name your-app-name --resource-group smartdoc-rg
 
 2. **HTTPS 강제 설정**
    ```bash
-   az webapp update --name your-app-name --resource-group smartdoc-rg --https-only true
+   az webapp update --name smartdocai --resource-group css-rg-092601 --https-only true
    ```
 
 3. **방화벽 설정**
@@ -183,14 +183,14 @@ az webapp log tail --name your-app-name --resource-group smartdoc-rg
 1. **Application Insights 설정**
    ```bash
    az monitor app-insights component create \
-       --app your-app-name-insights \
-       --location "East Asia" \
-       --resource-group smartdoc-rg
+       --app smartdocai-insights \
+       --location "Korea Central" \
+       --resource-group css-rg-092601
    ```
 
 2. **로그 스트림 모니터링**
    ```bash
-   az webapp log config --name your-app-name --resource-group smartdoc-rg \
+   az webapp log config --name smartdocai --resource-group css-rg-092601 \
        --application-logging filesystem --level information
    ```
 

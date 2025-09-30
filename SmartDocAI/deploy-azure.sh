@@ -4,10 +4,10 @@
 # Make sure you have Azure CLI installed and are logged in
 
 # Configuration
-RESOURCE_GROUP="smartdoc-rg"
+RESOURCE_GROUP="css-rg-092601"
 APP_SERVICE_PLAN="smartdoc-plan"
-WEB_APP_NAME="smartdoc-ai-$(date +%s)"  # Unique name with timestamp
-LOCATION="East Asia"  # or your preferred location
+WEB_APP_NAME="smartdocai"  # Existing web app name
+LOCATION="Korea Central"  # Korea Central region
 PYTHON_VERSION="3.11"
 
 echo "🚀 Starting Azure Web App deployment for SmartDocAI..."

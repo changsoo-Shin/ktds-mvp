@@ -1,0 +1,21 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# PowerShell scripts should use CRLF
+*.ps1 text eol=crlf
+
+# Shell scripts should use LF
+*.sh text eol=lf
+
+# Documentation files
+*.md text eol=lf
+
+# Python files
+*.py text eol=lf
+
+# JSON files
+*.json text eol=lf
+
+# YAML files
+*.yml text eol=lf
+*.yaml text eol=lf
