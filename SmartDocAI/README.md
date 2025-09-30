@@ -55,7 +55,7 @@ pip install -r requirements.txt
 Azure Portal에서 다음 서비스들을 생성하고 설정:
 
 1. **Azure OpenAI 리소스**
-   - GPT-4o-mini 모델 배포
+   - GPT-4.1-mini 모델 배포
    - API 키 및 엔드포인트 확인
 
 2. **Azure AI Search 서비스**
@@ -199,7 +199,7 @@ chmod +x deploy-to-existing-app.sh
 ### Azure 서비스 설정
 1. **Azure OpenAI 리소스 생성**
    - Azure Portal에서 OpenAI 리소스 생성
-   - GPT-4o-mini 모델 배포
+   - GPT-4.1-mini 모델 배포
    - API 키 및 엔드포인트 확인
 
 2. **Azure AI Search 서비스 생성**
@@ -284,7 +284,7 @@ az webapp log download --name your-app-name --resource-group smartdoc-rg
 - **OS**: Windows 10/11, macOS 10.15+, Ubuntu 20.04+
 
 ### Azure 서비스 요구사항
-- Azure OpenAI Service (GPT-4o-mini)
+- Azure OpenAI Service (GPT-4.1-mini)
 - Azure AI Search (Standard S1 이상 권장)
 - Azure Storage Account (Standard 계층)
 - Azure Form Recognizer (선택사항)
