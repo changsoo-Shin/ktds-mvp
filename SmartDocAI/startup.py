@@ -13,10 +13,13 @@ def main():
     # Set environment variables
     port = os.environ.get('PORT', '8000')
     
-    # Change to source directory
+    # Change to source directory if it exists
     src_path = os.path.join(os.path.dirname(__file__), 'src')
     if os.path.exists(src_path):
         os.chdir(src_path)
+    else:
+        # If src directory doesn't exist, stay in current directory
+        print("src directory not found, staying in current directory")
     
     # Streamlit configuration
     streamlit_config = [

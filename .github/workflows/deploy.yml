@@ -1,28 +1,49 @@
-name: Deploy to Streamlit Cloud
+name: Deploy to Azure Web App
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Set up Python
-      uses: actions/setup-python@v2
+    - name: 'Checkout GitHub Action'
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.8
-    
-    - name: Install dependencies
+        python-version: '3.11'
+        
+    - name: 'Resolve Project Dependencies Using Pip'
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    - name: Test app
+        pip install -r SmartDocAI/requirements.txt
+        
+    - name: 'Test app'
       run: |
+        cd SmartDocAI
         python -c "import streamlit; print('Streamlit version:', streamlit.__version__)"
         python -c "import langchain_openai; print('LangChain OpenAI version:', langchain_openai.__version__)"
+        
+    - name: 'Deploy to Azure Web App'
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'smartdocai'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: './SmartDocAI'
+        
+    - name: 'Login to Azure'
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+    - name: 'Configure Azure App Settings'
+      uses: azure/CLI@v1
+      with:
+        inlineScript: |
+          az webapp config appsettings set --name smartdocai --resource-group smartdoc-rg --settings @SmartDocAI/azure-app-service-settings.json
+          az webapp config set --name smartdocai --resource-group smartdoc-rg --startup-file "startup.py"
