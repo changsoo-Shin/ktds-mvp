@@ -8,6 +8,11 @@
 ## 🎯 서비스 개요
 SmartDoc AI는 업로드한 문서를 AI로 분석하고, RAG(Retrieval-Augmented Generation) 기술을 활용하여 지능형 질문-답변 서비스를 제공하는 웹 애플리케이션입니다. Azure의 강력한 AI 서비스들을 활용하여 정확하고 빠른 문서 분석을 제공합니다.
 
+## 🌐 라이브 데모
+**배포된 웹 애플리케이션**: [https://smartdocai-hvbwfketcse7g9ff.koreacentral-01.azurewebsites.net/](https://smartdocai-hvbwfketcse7g9ff.koreacentral-01.azurewebsites.net/)
+
+위 링크를 통해 실제 배포된 SmartDoc AI 서비스를 바로 체험해보실 수 있습니다. 문서를 업로드하고 AI 어시스턴트와 대화해보세요!
+
 ## ✨ 주요 기능
 - 📄 **다양한 문서 지원**: PDF, Word, PowerPoint, 텍스트, Excel 파일 지원
 - 🔍 **지능형 검색**: Azure AI Search 기반 벡터 검색으로 정확한 문서 검색
