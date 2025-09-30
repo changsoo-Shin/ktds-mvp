@@ -51,3 +51,5 @@ Thumbs.db
 
 # Azure
 .azure/
+
+.venv

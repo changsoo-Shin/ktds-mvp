@@ -35,14 +35,14 @@ jobs:
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
         package: './SmartDocAI'
         
-    - name: 'Login to Azure'
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    # - name: 'Login to Azure'
+    #   uses: azure/login@v1
+    #   with:
+    #     creds: ${{ secrets.AZURE_CREDENTIALS }}
         
-    - name: 'Configure Azure App Settings'
-      uses: azure/CLI@v1
-      with:
-        inlineScript: |
-          az webapp config appsettings set --name smartdocai --resource-group smartdoc-rg --settings @SmartDocAI/azure-app-service-settings.json
-          az webapp config set --name smartdocai --resource-group smartdoc-rg --startup-file "startup.py"
+    # - name: 'Configure Azure App Settings'
+    #   uses: azure/CLI@v1
+    #   with:
+    #     inlineScript: |
+    #       az webapp config appsettings set --name smartdocai --resource-group smartdoc-rg --settings @SmartDocAI/azure-app-service-settings.json
+    #       az webapp config set --name smartdocai --resource-group smartdoc-rg --startup-file "startup.py"
