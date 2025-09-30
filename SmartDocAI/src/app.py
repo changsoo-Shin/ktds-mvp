@@ -91,10 +91,7 @@ def main():
                 accept_multiple_files=True,
                 help="📄 PDF, Word, Excel, PowerPoint, 📝 한글(.hwp), 텍스트, Jupyter Notebook 파일을 업로드하세요"
             )
-            
-            # 한글 문서 지원 안내
-            st.info("💡 **한글 문서(.hwp) 지원**: 한글과컴퓨터의 한글 문서 파일을 업로드할 수 있습니다.")
-            
+                       
             if uploaded_files:
                 process_documents(uploaded_files)
             
