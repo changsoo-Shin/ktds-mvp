@@ -13,6 +13,11 @@ from pptx import Presentation
 import olefile
 import nbformat
 from streamlit.runtime.uploaded_file_manager import UploadedFile
+try:
+    import hwp5
+    HWP5_AVAILABLE = True
+except ImportError:
+    HWP5_AVAILABLE = False
 
 class DocumentProcessor:
     """문서 처리 클래스"""
@@ -219,8 +224,76 @@ class DocumentProcessor:
             # 파일을 바이트로 읽기
             file_bytes = file.read()
             
-            # 임시 파일로 저장 (olefile은 파일 경로가 필요함)
+            # hwp5 라이브러리가 사용 가능한 경우 우선 사용
+            if HWP5_AVAILABLE:
+                return self._extract_from_hwp_with_hwp5(file_bytes)
+            else:
+                return self._extract_from_hwp_with_olefile(file_bytes)
+                
+        except Exception as e:
+            raise Exception(f"한글 파일 처리 실패: {str(e)}")
+    
+    def _extract_from_hwp_with_hwp5(self, file_bytes: bytes) -> str:
+        """hwp5 라이브러리를 사용한 한글 파일 텍스트 추출"""
+        try:
             import tempfile
+            import io
+            
+            # 임시 파일로 저장
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.hwp') as temp_file:
+                temp_file.write(file_bytes)
+                temp_file_path = temp_file.name
+            
+            try:
+                # hwp5로 파일 열기
+                hwp_file = hwp5.Hwp5File(temp_file_path)
+                
+                text_content = ""
+                
+                # 문서의 모든 섹션에서 텍스트 추출
+                for section in hwp_file.bodytext.sections:
+                    for paragraph in section.paragraphs:
+                        for char in paragraph.chars:
+                            if hasattr(char, 'text') and char.text:
+                                text_content += char.text
+                        text_content += "\n"
+                
+                # 표에서 텍스트 추출
+                for section in hwp_file.bodytext.sections:
+                    for table in section.tables:
+                        for row in table.rows:
+                            for cell in row.cells:
+                                for paragraph in cell.paragraphs:
+                                    for char in paragraph.chars:
+                                        if hasattr(char, 'text') and char.text:
+                                            text_content += char.text
+                                    text_content += " "
+                            text_content += "\n"
+                
+                hwp_file.close()
+                
+                if not text_content.strip():
+                    raise Exception("한글 파일에서 텍스트를 추출할 수 없습니다.")
+                
+                return text_content.strip()
+                
+            finally:
+                # 임시 파일 삭제
+                try:
+                    os.unlink(temp_file_path)
+                except:
+                    pass
+                    
+        except Exception as e:
+            # hwp5 실패 시 olefile 방법으로 fallback
+            return self._extract_from_hwp_with_olefile(file_bytes)
+    
+    def _extract_from_hwp_with_olefile(self, file_bytes: bytes) -> str:
+        """olefile 라이브러리를 사용한 한글 파일 텍스트 추출 (fallback)"""
+        try:
+            import tempfile
+            
+            # 임시 파일로 저장
             with tempfile.NamedTemporaryFile(delete=False, suffix='.hwp') as temp_file:
                 temp_file.write(file_bytes)
                 temp_file_path = temp_file.name
@@ -236,7 +309,6 @@ class DocumentProcessor:
                 text_content = ""
                 
                 # HWP 파일의 텍스트 스트림 찾기
-                # HWP 5.0 이상의 경우 'BodyText' 디렉토리에서 섹션별로 텍스트 추출
                 if ole._olestream_size:
                     try:
                         # BodyText 디렉토리 내의 섹션들을 찾아서 텍스트 추출
@@ -254,8 +326,7 @@ class DocumentProcessor:
                                                 # 섹션 스트림 읽기
                                                 stream_data = ole._olestream(section_stream)
                                                 
-                                                # 간단한 텍스트 추출 (완전하지 않지만 기본적인 텍스트는 추출 가능)
-                                                # HWP의 복잡한 구조로 인해 완벽한 텍스트 추출은 어려움
+                                                # 텍스트 추출
                                                 decoded_text = self._extract_text_from_hwp_stream(stream_data)
                                                 if decoded_text:
                                                     text_content += decoded_text + "\n"
@@ -299,7 +370,7 @@ class DocumentProcessor:
                     pass
                     
         except Exception as e:
-            raise Exception(f"한글 파일 처리 실패: {str(e)}")
+            raise Exception(f"olefile을 사용한 한글 파일 처리 실패: {str(e)}")
     
     def _extract_text_from_hwp_stream(self, stream_data: bytes) -> str:
         """HWP 스트림에서 텍스트 추출"""

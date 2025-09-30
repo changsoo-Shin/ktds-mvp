@@ -13,6 +13,7 @@ python-pptx>=0.6.21
 pandas>=2.0.0
 openpyxl>=3.1.0
 olefile>=0.46
+hwp5>=0.1.0
 # numpy>=1.24.0  # Already installed
 faiss-cpu>=1.9.0
 tiktoken==0.5.1

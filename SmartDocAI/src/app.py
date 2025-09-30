@@ -89,8 +89,11 @@ def main():
                 "문서 업로드",
                 type=['pdf', 'docx', 'txt', 'xlsx', 'ppt', 'pptx', 'hwp', 'ipynb'],
                 accept_multiple_files=True,
-                help="PDF, Word, Excel, PowerPoint, 한글, 텍스트, Jupyter Notebook 파일을 업로드하세요"
+                help="📄 PDF, Word, Excel, PowerPoint, 📝 한글(.hwp), 텍스트, Jupyter Notebook 파일을 업로드하세요"
             )
+            
+            # 한글 문서 지원 안내
+            st.info("💡 **한글 문서(.hwp) 지원**: 한글과컴퓨터의 한글 문서 파일을 업로드할 수 있습니다.")
             
             if uploaded_files:
                 process_documents(uploaded_files)
@@ -139,6 +142,10 @@ def process_documents(uploaded_files):
         }
         
         try:
+            # 한글 문서인 경우 특별 안내
+            if uploaded_file.name.lower().endswith('.hwp'):
+                st.info("🔄 한글 문서를 처리 중입니다. 복잡한 구조로 인해 시간이 다소 걸릴 수 있습니다...")
+            
             # 문서 내용 추출
             content = processor.extract_content(uploaded_file)
             file_info['content'] = content
@@ -146,10 +153,19 @@ def process_documents(uploaded_files):
             # 세션 상태에 추가
             st.session_state.documents.append(file_info)
             
-            st.success(f"✅ {uploaded_file.name} 처리 완료!")
+            # 한글 문서인 경우 특별한 성공 메시지
+            if uploaded_file.name.lower().endswith('.hwp'):
+                st.success(f"✅ {uploaded_file.name} 한글 문서 처리 완료! 텍스트와 표 내용이 추출되었습니다.")
+            else:
+                st.success(f"✅ {uploaded_file.name} 처리 완료!")
             
         except Exception as e:
-            st.error(f"❌ {uploaded_file.name} 처리 실패: {str(e)}")
+            # 한글 문서 처리 실패 시 특별한 안내
+            if uploaded_file.name.lower().endswith('.hwp'):
+                st.error(f"❌ {uploaded_file.name} 한글 문서 처리 실패: {str(e)}")
+                st.warning("💡 한글 문서가 손상되었거나 지원되지 않는 형식일 수 있습니다. 다른 방법으로 텍스트를 추출해보세요.")
+            else:
+                st.error(f"❌ {uploaded_file.name} 처리 실패: {str(e)}")
     
     # 검색 엔진 및 AI 어시스턴트 초기화
     initialize_ai_components()
