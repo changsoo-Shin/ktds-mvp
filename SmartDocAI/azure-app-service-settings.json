@@ -1,0 +1,32 @@
+{
+  "appSettings": [
+    {
+      "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+      "value": "true"
+    },
+    {
+      "name": "ENABLE_ORYX_BUILD", 
+      "value": "true"
+    },
+    {
+      "name": "PYTHONPATH",
+      "value": "/home/site/wwwroot"
+    },
+    {
+      "name": "STREAMLIT_SERVER_PORT",
+      "value": "8000"
+    },
+    {
+      "name": "STREAMLIT_SERVER_ADDRESS",
+      "value": "0.0.0.0"
+    },
+    {
+      "name": "STREAMLIT_SERVER_HEADLESS",
+      "value": "true"
+    },
+    {
+      "name": "STREAMLIT_BROWSER_GATHER_USAGE_STATS",
+      "value": "false"
+    }
+  ]
+}
