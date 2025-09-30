@@ -293,7 +293,7 @@ class DocumentProcessor:
         try:
             import tempfile
             
-            # 임시 파일로 저장
+            # 임시 파일로 저장 (olefile은 파일 경로가 필요함)
             with tempfile.NamedTemporaryFile(delete=False, suffix='.hwp') as temp_file:
                 temp_file.write(file_bytes)
                 temp_file_path = temp_file.name
@@ -309,6 +309,7 @@ class DocumentProcessor:
                 text_content = ""
                 
                 # HWP 파일의 텍스트 스트림 찾기
+                # HWP 5.0 이상의 경우 'BodyText' 디렉토리에서 섹션별로 텍스트 추출
                 if ole._olestream_size:
                     try:
                         # BodyText 디렉토리 내의 섹션들을 찾아서 텍스트 추출
@@ -326,7 +327,8 @@ class DocumentProcessor:
                                                 # 섹션 스트림 읽기
                                                 stream_data = ole._olestream(section_stream)
                                                 
-                                                # 텍스트 추출
+                                                # 간단한 텍스트 추출 (완전하지 않지만 기본적인 텍스트는 추출 가능)
+                                                # HWP의 복잡한 구조로 인해 완벽한 텍스트 추출은 어려움
                                                 decoded_text = self._extract_text_from_hwp_stream(stream_data)
                                                 if decoded_text:
                                                     text_content += decoded_text + "\n"
