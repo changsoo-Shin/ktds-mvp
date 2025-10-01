@@ -6,6 +6,8 @@
 import os
 import re
 import hashlib
+import json
+import pickle
 from typing import List, Dict, Any
 from datetime import datetime
 import streamlit as st
@@ -355,3 +357,103 @@ def create_unique_filename(original_filename: str) -> str:
     name, ext = os.path.splitext(original_filename)
     timestamp = get_current_timestamp()
     return f"{name}_{timestamp}{ext}"
+
+def save_documents_to_file(documents: List[Dict], filepath: str = "documents.json") -> bool:
+    """
+    문서 리스트를 JSON 파일로 저장
+    
+    Args:
+        documents: 저장할 문서 리스트
+        filepath: 저장할 파일 경로
+        
+    Returns:
+        bool: 저장 성공 여부
+    """
+    try:
+        # content가 너무 큰 경우 일부만 저장 (처음 10000자)
+        documents_to_save = []
+        for doc in documents:
+            doc_copy = doc.copy()
+            if doc_copy.get('content') and len(doc_copy['content']) > 10000:
+                doc_copy['content'] = doc_copy['content'][:10000] + "... (내용이 잘림)"
+            documents_to_save.append(doc_copy)
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(documents_to_save, f, ensure_ascii=False, indent=2)
+        return True
+    except Exception as e:
+        print(f"문서 저장 실패: {str(e)}")
+        return False
+
+def load_documents_from_file(filepath: str = "documents.json") -> List[Dict]:
+    """
+    JSON 파일에서 문서 리스트 로드
+    
+    Args:
+        filepath: 로드할 파일 경로
+        
+    Returns:
+        List[Dict]: 로드된 문서 리스트
+    """
+    try:
+        if os.path.exists(filepath):
+            with open(filepath, 'r', encoding='utf-8') as f:
+                documents = json.load(f)
+            return documents
+        else:
+            return []
+    except Exception as e:
+        print(f"문서 로드 실패: {str(e)}")
+        return []
+
+def save_documents_content_to_file(documents: List[Dict], filepath: str = "documents_content.pkl") -> bool:
+    """
+    문서 내용을 pickle 파일로 저장 (전체 내용 보존)
+    
+    Args:
+        documents: 저장할 문서 리스트
+        filepath: 저장할 파일 경로
+        
+    Returns:
+        bool: 저장 성공 여부
+    """
+    try:
+        with open(filepath, 'wb') as f:
+            pickle.dump(documents, f)
+        return True
+    except Exception as e:
+        print(f"문서 내용 저장 실패: {str(e)}")
+        return False
+
+def load_documents_content_from_file(filepath: str = "documents_content.pkl") -> List[Dict]:
+    """
+    pickle 파일에서 문서 내용 로드 (전체 내용 보존)
+    
+    Args:
+        filepath: 로드할 파일 경로
+        
+    Returns:
+        List[Dict]: 로드된 문서 리스트
+    """
+    try:
+        if os.path.exists(filepath):
+            with open(filepath, 'rb') as f:
+                documents = pickle.load(f)
+            return documents
+        else:
+            return []
+    except Exception as e:
+        print(f"문서 내용 로드 실패: {str(e)}")
+        return []
+
+def get_documents_directory() -> str:
+    """
+    문서 저장 디렉토리 경로 반환
+    
+    Returns:
+        str: 문서 저장 디렉토리 경로
+    """
+    docs_dir = "documents"
+    if not os.path.exists(docs_dir):
+        os.makedirs(docs_dir)
+    return docs_dir

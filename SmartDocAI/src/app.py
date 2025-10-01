@@ -12,6 +12,11 @@ from dotenv import load_dotenv
 from document_processor import DocumentProcessor
 from search_engine import SearchEngine
 from ai_assistant import AIAssistant
+from utils import (
+    load_documents_content_from_file, 
+    save_documents_content_to_file,
+    get_documents_directory
+)
 
 # 환경 변수 로드
 load_dotenv()
@@ -58,7 +63,15 @@ st.markdown("""
 def initialize_session_state():
     """세션 상태 초기화"""
     if 'documents' not in st.session_state:
-        st.session_state.documents = []
+        # 기존 저장된 문서 로드
+        docs_dir = get_documents_directory()
+        documents_file = os.path.join(docs_dir, "documents_content.pkl")
+        st.session_state.documents = load_documents_content_from_file(documents_file)
+        
+        # 문서가 있으면 AI 컴포넌트 자동 초기화
+        if st.session_state.documents:
+            initialize_ai_components()
+    
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
     if 'search_engine' not in st.session_state:
@@ -104,11 +117,19 @@ def main():
                         st.write(f"**업로드 시간**: {doc['upload_time']}")
                         if st.button(f"삭제", key=f"delete_{i}"):
                             st.session_state.documents.pop(i)
+                            save_documents()  # 문서 삭제 후 저장
                             st.rerun()
         
         with tab2:
             st.subheader("채팅 설정")
-            st.info("문서를 먼저 업로드한 후 채팅을 시작하세요.")
+            if st.session_state.documents:
+                st.success(f"✅ {len(st.session_state.documents)}개 문서가 업로드되어 있습니다.")
+                if st.session_state.ai_assistant:
+                    st.success("✅ AI 어시스턴트가 활성화되어 있습니다.")
+                else:
+                    st.warning("⚠️ AI 어시스턴트를 초기화하려면 환경 변수를 설정해주세요.")
+            else:
+                st.info("📄 문서를 업로드하면 AI 어시스턴트와 채팅할 수 있습니다.")
             
         with tab3:
             st.subheader("설정")
@@ -164,8 +185,52 @@ def process_documents(uploaded_files):
             else:
                 st.error(f"❌ {uploaded_file.name} 처리 실패: {str(e)}")
     
+    # 문서 저장
+    save_documents()
+    
     # 검색 엔진 및 AI 어시스턴트 초기화
     initialize_ai_components()
+
+def save_documents():
+    """문서 저장"""
+    if st.session_state.documents:
+        docs_dir = get_documents_directory()
+        documents_file = os.path.join(docs_dir, "documents_content.pkl")
+        if save_documents_content_to_file(st.session_state.documents, documents_file):
+            print(f"문서 {len(st.session_state.documents)}개 저장 완료")
+
+def simple_search(query: str, documents: list) -> list:
+    """간단한 키워드 검색"""
+    query_lower = query.lower()
+    results = []
+    
+    for doc in documents:
+        if doc.get('content'):
+            content_lower = doc['content'].lower()
+            
+            # 키워드가 포함된 문장들 찾기
+            sentences = doc['content'].split('.')
+            relevant_sentences = []
+            
+            for sentence in sentences:
+                if query_lower in sentence.lower():
+                    relevant_sentences.append(sentence.strip())
+            
+            if relevant_sentences:
+                # 관련도 계산 (간단한 키워드 빈도 기반)
+                content_count = content_lower.count(query_lower)
+                relevance_score = min(content_count / 10.0, 1.0)  # 최대 1.0으로 제한
+                
+                results.append({
+                    'title': doc['name'],
+                    'source': doc['name'],
+                    'content': '. '.join(relevant_sentences[:3]),  # 최대 3개 문장
+                    'score': relevance_score
+                })
+    
+    # 관련도 순으로 정렬
+    results.sort(key=lambda x: x['score'], reverse=True)
+    return results[:10]  # 최대 10개 결과
 
 def initialize_ai_components():
     """AI 컴포넌트 초기화"""
@@ -197,19 +262,40 @@ def initialize_ai_components():
 
 def show_search_interface():
     """검색 인터페이스 표시"""
-    if not st.session_state.search_engine:
-        st.info("문서를 먼저 업로드해주세요.")
+    # 문서가 없으면 안내 메시지
+    if not st.session_state.documents:
+        st.info("📄 문서를 업로드하면 검색 기능을 사용할 수 있습니다.")
         return
     
-    search_query = st.text_input("검색어를 입력하세요:", placeholder="예: 인공지능, 데이터 분석...")
-    
-    if st.button("🔍 검색") and search_query:
-        with st.spinner("검색 중..."):
-            try:
-                results = st.session_state.search_engine.search(search_query)
-                display_search_results(results)
-            except Exception as e:
-                st.error(f"검색 실패: {str(e)}")
+    # 검색 엔진이 없으면 간단한 검색 기능 제공
+    if not st.session_state.search_engine:
+        st.warning("⚠️ 검색 엔진이 초기화되지 않았습니다. 간단한 검색을 시도합니다.")
+        
+        search_query = st.text_input("검색어를 입력하세요:", placeholder="예: 인공지능, 데이터 분석...")
+        
+        if st.button("🔍 검색") and search_query:
+            with st.spinner("검색 중..."):
+                try:
+                    # 간단한 키워드 검색
+                    results = simple_search(search_query, st.session_state.documents)
+                    display_search_results(results)
+                except Exception as e:
+                    st.error(f"검색 실패: {str(e)}")
+    else:
+        # 정상적인 검색 엔진 사용
+        search_query = st.text_input("검색어를 입력하세요:", placeholder="예: 인공지능, 데이터 분석...")
+        
+        if st.button("🔍 검색") and search_query:
+            with st.spinner("검색 중..."):
+                try:
+                    results = st.session_state.search_engine.search(search_query)
+                    display_search_results(results)
+                except Exception as e:
+                    st.error(f"검색 실패: {str(e)}")
+                    # 검색 엔진 실패 시 간단한 검색으로 대체
+                    st.info("간단한 검색을 시도합니다...")
+                    results = simple_search(search_query, st.session_state.documents)
+                    display_search_results(results)
 
 def display_search_results(results):
     """검색 결과 표시"""
@@ -228,39 +314,101 @@ def display_search_results(results):
 
 def show_chat_interface():
     """채팅 인터페이스 표시"""
-    if not st.session_state.ai_assistant:
-        st.info("문서를 먼저 업로드해주세요.")
+    # 문서가 없으면 안내 메시지
+    if not st.session_state.documents:
+        st.info("📄 문서를 업로드하면 AI 어시스턴트와 채팅할 수 있습니다.")
         return
     
-    # 채팅 히스토리 표시
-    for message in st.session_state.chat_history:
-        if message['role'] == 'user':
-            st.markdown(f"""
-            <div class="chat-message user-message">
-                <strong>👤 사용자:</strong><br>
-                {message['content']}
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"""
-            <div class="chat-message ai-message">
-                <strong>🤖 AI:</strong><br>
-                {message['content']}
-            </div>
-            """, unsafe_allow_html=True)
+    # AI 어시스턴트가 없으면 간단한 응답 기능 제공
+    if not st.session_state.ai_assistant:
+        st.warning("⚠️ AI 어시스턴트가 초기화되지 않았습니다. 간단한 응답을 제공합니다.")
+        
+        # 채팅 히스토리 표시
+        for message in st.session_state.chat_history:
+            if message['role'] == 'user':
+                st.markdown(f"""
+                <div class="chat-message user-message">
+                    <strong>👤 사용자:</strong><br>
+                    {message['content']}
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div class="chat-message ai-message">
+                    <strong>🤖 AI:</strong><br>
+                    {message['content']}
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # 채팅 입력
+        user_input = st.text_input("질문을 입력하세요:", placeholder="문서에 대해 궁금한 것을 물어보세요...")
+        
+        col1, col2 = st.columns([1, 4])
+        with col1:
+            if st.button("💬 전송"):
+                if user_input:
+                    process_simple_chat_message(user_input)
+        with col2:
+            if st.button("🗑️ 채팅 초기화"):
+                st.session_state.chat_history = []
+                st.rerun()
+    else:
+        # 정상적인 AI 어시스턴트 사용
+        # 채팅 히스토리 표시
+        for message in st.session_state.chat_history:
+            if message['role'] == 'user':
+                st.markdown(f"""
+                <div class="chat-message user-message">
+                    <strong>👤 사용자:</strong><br>
+                    {message['content']}
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div class="chat-message ai-message">
+                    <strong>🤖 AI:</strong><br>
+                    {message['content']}
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # 채팅 입력
+        user_input = st.text_input("질문을 입력하세요:", placeholder="문서에 대해 궁금한 것을 물어보세요...")
+        
+        col1, col2 = st.columns([1, 4])
+        with col1:
+            if st.button("💬 전송"):
+                if user_input:
+                    process_chat_message(user_input)
+        with col2:
+            if st.button("🗑️ 채팅 초기화"):
+                st.session_state.chat_history = []
+                st.rerun()
+
+def process_simple_chat_message(user_input):
+    """간단한 채팅 메시지 처리 (AI 어시스턴트 없이)"""
+    # 사용자 메시지 추가
+    st.session_state.chat_history.append({
+        'role': 'user',
+        'content': user_input,
+        'timestamp': datetime.now()
+    })
     
-    # 채팅 입력
-    user_input = st.text_input("질문을 입력하세요:", placeholder="문서에 대해 궁금한 것을 물어보세요...")
-    
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        if st.button("💬 전송"):
-            if user_input:
-                process_chat_message(user_input)
-    with col2:
-        if st.button("🗑️ 채팅 초기화"):
-            st.session_state.chat_history = []
+    try:
+        with st.spinner("답변을 생성 중..."):
+            # 간단한 키워드 기반 응답 생성
+            response = generate_simple_response(user_input, st.session_state.documents)
+            
+            # AI 응답 추가
+            st.session_state.chat_history.append({
+                'role': 'assistant',
+                'content': response,
+                'timestamp': datetime.now()
+            })
+            
             st.rerun()
+            
+    except Exception as e:
+        st.error(f"답변 생성 실패: {str(e)}")
 
 def process_chat_message(user_input):
     """채팅 메시지 처리"""
@@ -291,6 +439,36 @@ def process_chat_message(user_input):
             
     except Exception as e:
         st.error(f"답변 생성 실패: {str(e)}")
+
+def generate_simple_response(question: str, documents: list) -> str:
+    """간단한 응답 생성 (AI 어시스턴트 없이)"""
+    question_lower = question.lower()
+    
+    # 문서에서 관련 내용 찾기
+    relevant_content = []
+    for doc in documents:
+        if doc.get('content'):
+            content_lower = doc['content'].lower()
+            if any(keyword in content_lower for keyword in question_lower.split()):
+                # 관련 문장들 추출
+                sentences = doc['content'].split('.')
+                for sentence in sentences:
+                    if any(keyword in sentence.lower() for keyword in question_lower.split()):
+                        relevant_content.append(f"📄 {doc['name']}: {sentence.strip()}")
+                        if len(relevant_content) >= 3:  # 최대 3개
+                            break
+    
+    if relevant_content:
+        response = f"업로드된 문서에서 관련 내용을 찾았습니다:\n\n" + "\n\n".join(relevant_content)
+        response += f"\n\n💡 더 정확한 답변을 위해서는 AI 어시스턴트를 초기화해주세요."
+    else:
+        response = f"죄송합니다. '{question}'에 대한 관련 내용을 업로드된 문서에서 찾을 수 없습니다.\n\n"
+        response += f"업로드된 문서 목록:\n"
+        for doc in documents:
+            response += f"📄 {doc['name']}\n"
+        response += f"\n💡 더 정확한 답변을 위해서는 AI 어시스턴트를 초기화해주세요."
+    
+    return response
 
 def show_settings():
     """설정 표시"""
